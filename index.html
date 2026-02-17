@@ -112,6 +112,7 @@
             gap: 1.5rem;
             min-height: 220px;
             padding-top: 10px;
+            position: relative;
         }
 
         button {
@@ -142,10 +143,9 @@
             z-index: 1000;
             font-size: 0.9rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            position: relative; /* Starts relative, switches to fixed on interaction */
+            position: relative;
         }
 
-        /* Dashboard Styles */
         #dashboard {
             display: none;
             flex-direction: column;
@@ -218,7 +218,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* SPIN WHEEL */
         .spinner-container {
             position: relative;
             width: 180px;
@@ -277,7 +276,6 @@
             border: 2px solid var(--soft-pink);
         }
 
-        /* Modal Redesign */
         .overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -315,6 +313,7 @@
             border-radius: 18px;
             border: 3px solid #fff;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #fdf2f4;
         }
 
         .letter-content {
@@ -376,6 +375,12 @@
             text-transform: uppercase;
             border: 1px solid #ddd;
         }
+
+        .dirty-gif-list img {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -386,7 +391,7 @@
         <div class="gif-display">
             <img id="mainGif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHVmaG9kZHNhbHZncTl0OGs5Nm5nNTRjaXdwaTBtNzRxcGY1aTZycCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1JmGiBtqTuehfYxuy9/giphy.gif" alt="Cat Proposal">
         </div>
-        <div class="btn-group-proposal">
+        <div class="btn-group-proposal" id="btnContainer">
             <button class="btn-yes" id="yesBtn" onclick="accept()">YES! 💕</button>
             <button class="btn-no" id="noBtn" onclick="reject()" onmouseover="reject()">No 😢</button>
         </div>
@@ -396,12 +401,10 @@
     <div class="container" id="dashboard">
         <h1>My Queen, Bindu! 👑</h1>
 
-        <!-- 1. Main GIF at top -->
         <div class="gif-display" style="height: 150px;">
             <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnNuMmV3aTh4d3o3cWJna2RmdnE2OG5mdm0ydmd1NXo0bDFlaG4wNyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/bpTL6wXRuMQpMIVduB/giphy.gif">
         </div>
 
-        <!-- 2. Happiness Meter -->
         <div class="card">
             <p style="font-size: 0.85rem; font-weight: bold; color: var(--deep-pink);">Bindu's Happiness meter:</p>
             <div class="happiness-bar">
@@ -410,7 +413,6 @@
             <button onclick="fillLove()" style="font-size: 0.75rem; background: var(--deep-pink); color: white; padding: 8px 18px; border-radius: 12px; font-weight: bold;">Send a Kiss! 💋</button>
         </div>
 
-        <!-- 3. Gifts -->
         <div class="gift-row">
             <div class="gift-item" onclick="askForCode(1)">
                 <div class="gift-circle" id="g1">📸<span class="lock" id="l1">🔒</span></div>
@@ -426,7 +428,6 @@
             </div>
         </div>
 
-        <!-- 4. Adventure Generator -->
         <div class="card">
             <p style="font-size: 0.85rem; font-weight: bold; color: var(--deep-pink);">Adventure Generator 🎡</p>
             <div class="spinner-container">
@@ -457,6 +458,7 @@
         const barFill = document.getElementById('barFill');
         const spinnerInner = document.getElementById('spinnerInner');
         const spinResult = document.getElementById('spinResult');
+        const btnContainer = document.getElementById('btnContainer');
 
         let noCount = 0;
         let yesScale = 1;
@@ -483,30 +485,20 @@
 
         function reject() {
             noCount++;
-            
-            // Switch to fixed positioning to allow unrestricted movement on viewport
-            if (noBtn.style.position !== 'fixed') {
-                noBtn.style.position = 'fixed';
+            if (noBtn.style.position !== 'absolute') {
+                noBtn.style.position = 'absolute';
             }
-
-            const btnWidth = noBtn.offsetWidth || 100;
+            const btnWidth = noBtn.offsetWidth || 80;
             const btnHeight = noBtn.offsetHeight || 40;
-            const padding = 50; // Keep it away from edges
-            
-            // MATH to keep it strictly on screen
-            const maxX = window.innerWidth - btnWidth - padding;
-            const maxY = window.innerHeight - btnHeight - padding;
-            
-            const x = Math.max(padding, Math.floor(Math.random() * maxX));
-            const y = Math.max(padding, Math.floor(Math.random() * maxY));
-            
+            const maxX = btnContainer.offsetWidth - btnWidth;
+            const maxY = btnContainer.offsetHeight - btnHeight;
+            const x = Math.max(0, Math.floor(Math.random() * maxX));
+            const y = Math.max(0, Math.floor(Math.random() * maxY));
             noBtn.style.left = x + 'px';
             noBtn.style.top = y + 'px';
             noBtn.innerText = noMsgs[Math.min(noCount - 1, noMsgs.length - 1)];
-
-            yesScale += 0.5;
+            yesScale += 0.4;
             yesBtn.style.transform = `scale(${yesScale})`;
-
             if (noCount >= 5) {
                 document.getElementById('question').innerText = "JUST SAY YES, BINDU! ❤️";
                 document.getElementById('question').style.color = "var(--bright-pink)";
@@ -532,13 +524,9 @@
         function spin() {
             if (spinning) return;
             spinning = true;
-            
-            // Increase rotation every time
             const rotations = 1800 + Math.random() * 3600;
             totalRotation += rotations;
-            
             spinnerInner.style.transform = `rotate(${totalRotation}deg)`;
-            
             setTimeout(() => {
                 const pick = dateIdeas[Math.floor(Math.random() * dateIdeas.length)];
                 spinResult.innerHTML = pick;
@@ -577,8 +565,10 @@
         function reveal(id) {
             if (id === 1) {
                 let h = `<h2 style="font-family:'Dancing Script'; font-size:2.2rem; color:var(--deep-pink)">Memories 📸</h2><div class="img-grid">`;
+                // Updated range: photo10.jpg through photo20.jpg
+                // Fallback: if .jpg fails, tries .jpeg
                 for(let i=10; i<=20; i++) {
-                    h += `<img src="photo${i}.jpg" onerror="this.src='photo${i}.jpeg'; this.onerror=null;">`;
+                    h += `<img src="photo${i}.jpg" alt="Memory ${i}" onerror="if(this.src.endsWith('.jpg')){this.src='photo${i}.jpeg'}">`;
                 }
                 h += `</div><button class="close-btn-premium" onclick="closeModal()">Back to Dashboard</button>`;
                 modalContent.innerHTML = h;
@@ -588,7 +578,6 @@
                     <div class="letter-content">
                         <p><b>My dearest Bindu,</b></p>
                         <p style="margin-top:10px;">From the moment you came into my life, my world quietly found its meaning. You are not just my wife—you are my safe place, my strength when I feel weak, and my calm in every storm.</p>
-                        <p style="margin-top:10px;">You take care of me in ways I don’t always know how to explain. You stand by me when I am not at my best, and that kind of love is rare and priceless. If I have ever hurt you, knowingly or unknowingly, please know that it came from my flaws, never from a lack of love for you.</p>
                         <p style="margin-top:10px;">Thank you for choosing me every day. Loving you is not something I do—it is who I am.</p>
                         <p style="margin-top:20px; text-align: right; font-weight: bold; font-family: 'Dancing Script'; font-size: 1.4rem;">Forever yours,<br>❤️</p>
                     </div>
@@ -603,8 +592,7 @@
         function showDirty() {
             const list = [
                 "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2djazZrMGM5eWdydWVhMGRrdDBmZHluZW1kbGtrMTk0eW0zdGdkMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/q8TEi7UTxas92/giphy.gif",
-                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd3NneXZmODFhNmZpMmZ6ZzJ3ZGRwdHh2Z2JpOWs0OWt5eHR5ZmU0ZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/K7G37W15zK5O0/giphy.gif",
-                "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bHZiNmI2NmYzMGFpZGEzbmMyaTh1d3hmaWtnc3M3MjdhcHA4OWtzeCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1ahqfxbaxEVdC/giphy.gif"
+                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd3NneXZmODFhNmZpMmZ6ZzJ3ZGRwdHh2Z2JpOWs0OWt5eHR5ZmU0ZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/K7G37W15zK5O0/giphy.gif"
             ];
             let h = `<h2 style="font-family:'Dancing Script'; font-size:2.2rem; color:var(--deep-pink)">Eww Bindu! 🚿</h2><p style="margin-bottom:15px; color:#666;">Go take a bath, you're so dirty!</p><div class="dirty-gif-list">`;
             list.forEach(src => h += `<img src="${src}">`);
